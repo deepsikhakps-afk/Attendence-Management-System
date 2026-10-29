@@ -1,0 +1,8 @@
+{
+  "name": "attendance-management-module",
+  "version": "1.0.0",
+  "description": "Attendance Management Module (Express + MongoDB + Mongoose)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "dev": "node --watch server.js" },
+  "dependencies": { "express": "^4.19.2", "mongoose": "^8.5.0" }
+}

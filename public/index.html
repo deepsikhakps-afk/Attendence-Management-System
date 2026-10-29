@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roll Call – Attendance Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16213a;--ink2:#46526d;--paper:#f3f5fa;--card:#fff;--line:#dfe4ee;--present:#0f9d8a;--present-bg:#dcf5f0;--absent:#e04a4f;--absent-bg:#fde6e7;--accent:#4b4bdb;--r:14px}
+@media(prefers-color-scheme:dark){:root{--ink:#eef1fa;--ink2:#a4aec6;--paper:#0f1526;--card:#18213a;--line:#2a3555;--present:#3ed1bc;--present-bg:#12372f;--absent:#ff7a7f;--absent-bg:#3d1c26;--accent:#8c8cff}}
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+h1,h2,.num{font-family:'Bricolage Grotesque','DM Sans',sans-serif;letter-spacing:-.02em}
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:20px clamp(16px,4vw,48px);border-bottom:1px solid var(--line);background:var(--card)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:800;font-family:'Bricolage Grotesque'}
+h1{font-size:1.5rem;margin:0}
+.brand small{display:block;color:var(--ink2);font-size:.85rem}
+.switch{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px}
+.switch button{border:0;background:none;color:var(--ink2);padding:8px 20px;border-radius:999px;font:600 .95rem 'DM Sans';cursor:pointer;transition:.2s}
+.switch button.on{background:var(--accent);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:28px clamp(16px,4vw,48px) 60px}
+.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.stat .num{font-size:2.1rem;font-weight:800;line-height:1.1}
+.stat span{color:var(--ink2);font-size:.9rem}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:24px}
+h2{font-size:1.2rem;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end}
+label{display:block;font-size:.85rem;font-weight:600;color:var(--ink2);margin-bottom:5px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font:inherit}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.status-pick{display:flex;gap:8px;position:relative}
+.status-pick input{position:absolute;opacity:0;width:1px;height:1px}
+.status-pick label{flex:1;margin:0;text-align:center;padding:10px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;color:var(--ink);font-weight:600;transition:.15s}
+#sP:checked+label{background:var(--present-bg);border-color:var(--present);color:var(--present)}
+#sA:checked+label{background:var(--absent-bg);border-color:var(--absent);color:var(--absent)}
+#sP:focus-visible+label,#sA:focus-visible+label{outline:2px solid var(--accent)}
+.btn{border:0;border-radius:10px;padding:11px 20px;font:600 .95rem 'DM Sans';cursor:pointer;background:var(--accent);color:#fff;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink2)}
+.row-actions{display:flex;gap:8px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th{text-align:left;font-size:.85rem;color:var(--ink2);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:12px 10px;border-bottom:1px solid var(--line)}
+.chip{border:0;border-radius:999px;padding:5px 14px;font:600 .85rem 'DM Sans';cursor:pointer}
+.chip.Present{background:var(--present-bg);color:var(--present)}
+.chip.Absent{background:var(--absent-bg);color:var(--absent)}
+span.chip{cursor:default}
+.icon{background:none;border:0;cursor:pointer;color:var(--ink2);padding:4px 8px;border-radius:8px;font:500 .9rem 'DM Sans'}
+.icon:hover{background:var(--paper);color:var(--ink)}
+.empty{text-align:center;color:var(--ink2);padding:36px 10px}
+.ringbox{display:flex;flex-wrap:wrap;gap:28px;align-items:center}
+.ring{--p:0;width:150px;height:150px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--present) calc(var(--p)*1%),var(--absent-bg) 0);transition:.6s}
+.ring>div{width:112px;height:112px;border-radius:50%;background:var(--card);display:grid;place-items:center;text-align:center}
+.ring .num{font-size:2rem;font-weight:800}
+.bars{flex:1;min-width:240px}
+.bar{margin-bottom:12px}
+.bar-h{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:4px}
+.track{height:10px;border-radius:99px;background:var(--absent-bg);overflow:hidden}
+.fill{height:100%;background:var(--present);border-radius:99px;transition:width .6s}
+.fill.low{background:var(--absent)}
+.warn{color:var(--absent);font-weight:600}
+#toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,90px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:12px;transition:.3s;font-weight:500;z-index:9}
+#toast.show{transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><div class="logo">RC</div><div><h1>Roll Call</h1><small>Attendance Management Module</small></div></div>
+  <div class="switch">
+    <button id="tBtn" class="on" onclick="setRole('teacher')">Teacher</button>
+    <button id="sBtn" onclick="setRole('student')">Student</button>
+  </div>
+</div>
+
+<main>
+<section id="teacherView">
+  <div class="stats">
+    <div class="stat"><div class="num" id="kTotal">0</div><span>Records</span></div>
+    <div class="stat"><div class="num" id="kPresent" style="color:var(--present)">0</div><span>Present</span></div>
+    <div class="stat"><div class="num" id="kAbsent" style="color:var(--absent)">0</div><span>Absent</span></div>
+    <div class="stat"><div class="num" id="kRate">0%</div><span>Attendance rate</span></div>
+  </div>
+
+  <div class="panel">
+    <h2 id="formTitle">Mark attendance</h2>
+    <form id="form" class="grid" onsubmit="save(event)">
+      <div><label for="studentId">Student ID</label><input id="studentId" placeholder="e.g. 25MCA1001" required></div>
+      <div><label for="studentName">Student name</label><input id="studentName" placeholder="Full name" required></div>
+      <div><label for="course">Course</label><input id="course" placeholder="e.g. Web Technologies" required></div>
+      <div><label for="date">Date</label><input id="date" type="date" required></div>
+      <div><label for="teacher">Teacher name</label><input id="teacher" placeholder="Your name" required></div>
+      <div><label>Status</label>
+        <div class="status-pick">
+          <input type="radio" name="status" id="sP" value="Present" checked><label for="sP">Present</label>
+          <input type="radio" name="status" id="sA" value="Absent"><label for="sA">Absent</label>
+        </div></div>
+      <div class="row-actions"><button class="btn" id="saveBtn">Save record</button><button type="button" class="btn ghost hidden" id="cancelBtn" onclick="resetForm()">Cancel</button></div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>Attendance records</h2>
+    <div class="grid" style="margin-bottom:16px">
+      <div><label for="fq">Search</label><input id="fq" placeholder="Name or ID" oninput="debounce()"></div>
+      <div><label for="fcourse">Course</label><input id="fcourse" placeholder="Any course" oninput="debounce()"></div>
+      <div><label for="fdate">Date</label><input id="fdate" type="date" onchange="load()"></div>
+      <div><label for="fstatus">Status</label><select id="fstatus" onchange="load()"><option value="">All</option><option>Present</option><option>Absent</option></select></div>
+      <div><button class="btn ghost" onclick="clearFilters()">Clear filters</button></div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Student</th><th>Course</th><th>Date</th><th>Status</th><th>Teacher</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="studentView" class="hidden">
+  <div class="panel">
+    <h2>Check your attendance</h2>
+    <form class="grid" onsubmit="lookup(event)">
+      <div><label for="myId">Your student ID</label><input id="myId" placeholder="e.g. 25MCA1001" required></div>
+      <div><button class="btn">View attendance</button></div>
+    </form>
+  </div>
+  <div id="myResult" class="hidden">
+    <div class="panel">
+      <div class="ringbox">
+        <div class="ring" id="ring"><div><div><div class="num" id="ringNum">0%</div><small id="ringSub"></small></div></div></div>
+        <div class="bars" id="bars"></div>
+      </div>
+      <p id="warn" class="warn hidden">Your overall attendance is below 75%. Talk to your teacher about how to catch up.</p>
+    </div>
+    <div class="panel"><h2>Day-by-day record</h2>
+      <div class="tablewrap"><table><thead><tr><th>Date</th><th>Course</th><th>Status</th><th>Teacher</th></tr></thead><tbody id="myRows"></tbody></table></div>
+    </div>
+  </div>
+</section>
+</main>
+<div id="toast" role="status"></div>
+
+<script>
+const API = '/api/attendance';
+let role = 'teacher', editId = null, timer;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(url, method = 'GET', body) {
+  const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'x-role': role }, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Something went wrong');
+  return data;
+}
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2600); }
+
+function setRole(r) {
+  role = r;
+  $('tBtn').classList.toggle('on', r === 'teacher'); $('sBtn').classList.toggle('on', r === 'student');
+  $('teacherView').classList.toggle('hidden', r !== 'teacher'); $('studentView').classList.toggle('hidden', r !== 'student');
+  if (r === 'teacher') load();
+}
+
+/* ---------- Teacher ---------- */
+function resetForm() {
+  editId = null; $('form').reset(); $('date').value = new Date().toISOString().slice(0, 10);
+  $('formTitle').textContent = 'Mark attendance'; $('saveBtn').textContent = 'Save record'; $('cancelBtn').classList.add('hidden');
+  try { $('teacher').value = localStorage.getItem('teacherName') || ''; } catch (e) {}
+}
+async function save(e) {
+  e.preventDefault();
+  const body = { studentId: $('studentId').value, studentName: $('studentName').value, course: $('course').value,
+    date: $('date').value, teacher: $('teacher').value, status: document.querySelector('[name=status]:checked').value };
+  try {
+    await api(editId ? `${API}/${editId}` : API, editId ? 'PUT' : 'POST', body);
+    try { localStorage.setItem('teacherName', body.teacher); } catch (e) {}
+    toast(editId ? 'Record updated' : `${body.studentName} marked ${body.status}`);
+    resetForm(); $('course').value = body.course; $('date').value = body.date; $('teacher').value = body.teacher;
+    $('studentId').focus(); load();
+  } catch (err) { toast(err.message); }
+}
+function debounce() { clearTimeout(timer); timer = setTimeout(load, 300); }
+function clearFilters() { ['fq', 'fcourse', 'fdate', 'fstatus'].forEach(i => $(i).value = ''); load(); }
+
+async function load() {
+  const p = new URLSearchParams({ q: $('fq').value, course: $('fcourse').value, date: $('fdate').value, status: $('fstatus').value });
+  [...p.keys()].forEach(k => !p.get(k) && p.delete(k));
+  try {
+    const { summary: s, records } = await api(`${API}?${p}`);
+    $('kTotal').textContent = s.total; $('kPresent').textContent = s.present; $('kAbsent').textContent = s.absent; $('kRate').textContent = s.percentage + '%';
+    window._records = records;
+    $('rows').innerHTML = records.length ? records.map(r => `
+      <tr><td><strong>${esc(r.studentName)}</strong><br><small>${esc(r.studentId)}</small></td>
+      <td>${esc(r.course)}</td><td>${r.date}</td>
+      <td><button class="chip ${r.status}" title="Click to flip status" onclick="flip('${r._id}','${r.status}')">${r.status}</button></td>
+      <td>${esc(r.teacher)}</td>
+      <td><div class="row-actions"><button class="icon" onclick="edit('${r._id}')">Edit</button><button class="icon" onclick="del('${r._id}')">Delete</button></div></td></tr>`).join('')
+      : '<tr><td colspan="6" class="empty">No records yet. Mark your first attendance above.</td></tr>';
+  } catch (err) { toast(err.message); }
+}
+async function flip(id, cur) {
+  try { await api(`${API}/${id}`, 'PUT', { status: cur === 'Present' ? 'Absent' : 'Present' }); toast('Status changed'); load(); } catch (e) { toast(e.message); }
+}
+function edit(id) {
+  const r = window._records.find(x => x._id === id); editId = id;
+  $('studentId').value = r.studentId; $('studentName').value = r.studentName; $('course').value = r.course;
+  $('date').value = r.date; $('teacher').value = r.teacher;
+  $(r.status === 'Present' ? 'sP' : 'sA').checked = true;
+  $('formTitle').textContent = 'Edit record'; $('saveBtn').textContent = 'Update record'; $('cancelBtn').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function del(id) {
+  if (!confirm('Delete this attendance record?')) return;
+  try { await api(`${API}/${id}`, 'DELETE'); toast('Record deleted'); load(); } catch (e) { toast(e.message); }
+}
+
+/* ---------- Student ---------- */
+async function lookup(e) {
+  e.preventDefault();
+  try {
+    const d = await api(`${API}/student/${encodeURIComponent($('myId').value.trim())}`);
+    $('myResult').classList.remove('hidden');
+    if (!d.summary.total) {
+      $('ring').style.setProperty('--p', 0); $('ringNum').textContent = '–'; $('ringSub').textContent = '';
+      $('bars').innerHTML = '<p class="empty">No attendance found for this ID. Check the ID and try again.</p>';
+      $('myRows').innerHTML = ''; $('warn').classList.add('hidden'); return;
+    }
+    $('ring').style.setProperty('--p', d.summary.percentage);
+    $('ringNum').textContent = d.summary.percentage + '%';
+    $('ringSub').textContent = `${d.summary.present}/${d.summary.total} days`;
+    $('warn').classList.toggle('hidden', d.summary.percentage >= 75);
+    $('bars').innerHTML = d.courses.map(c => `<div class="bar"><div class="bar-h"><span>${esc(c.course)}</span><span>${c.percentage}% (${c.present}/${c.total})</span></div>
+      <div class="track"><div class="fill ${c.percentage < 75 ? 'low' : ''}" style="width:${c.percentage}%"></div></div></div>`).join('');
+    $('myRows').innerHTML = d.records.map(r => `<tr><td>${r.date}</td><td>${esc(r.course)}</td><td><span class="chip ${r.status}">${r.status}</span></td><td>${esc(r.teacher)}</td></tr>`).join('');
+  } catch (err) { toast(err.message); }
+}
+
+resetForm(); load();
+</script>
+</body>
+</html>
